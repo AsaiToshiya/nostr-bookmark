@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>nostr-bookmark</title>
+  </head>
+  <body>
+    <h1>nostr-bookmark</h1>
+    nsec:
+    <input id="nsec" type="text" size="50" /><br />
+    <button onclick="handleClick()">load</button><br />
+    bookmark:
+    <div id="bookmark"></div>
+
+    <script src="https://unpkg.com/nostr-tools/lib/nostr.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      marked.setOptions({
+        breaks: true,
+      });
+
+      const relays = [
+        "wss://nos.lol",
+        "wss://nostr.bitcoiner.social",
+        "wss://nostr.mom",
+        "wss://relay.damus.io",
+        "wss://relay.nostr.bg",
+      ];
+
+      const e = async (pool, relays, event) => [
+        event,
+        await pool.list(relays, [
+          {
+            ids: event.tags.filter((tag) => tag[0] == "e").map((tag) => tag[1]),
+          },
+        ]),
+      ];
+
+      const handleClick = async () => {
+        const sk = window.NostrTools.nip19.decode(nsec.value).data;
+        const pk = window.NostrTools.getPublicKey(sk);
+
+        const pool = new window.NostrTools.SimplePool();
+        const events = await pool.list(relays, [
+          {
+            authors: [pk],
+            kinds: [10003],
+          },
+          {
+            authors: [pk],
+            kinds: [30001],
+            "#d": ["bookmark"],
+          },
+        ]);
+
+        event = events.sort((a, b) => b.created_at - a.created_at)[0];
+
+        const bookmarks = (await e(pool, relays, event))[1];
+        bookmark.innerHTML = bookmarks
+          .sort((a, b) => b.created_at - a.created_at)
+          .map((event) => {
+            const date = new Date(event.created_at * 1000);
+            const dateTime = date.toLocaleString();
+            const content = marked.parse(event.content);
+            return `<h3><a href="https://njump.me/${window.NostrTools.nip19.neventEncode(
+              {
+                id: event.id,
+              }
+            )}">${dateTime}</a></h3>${content}`;
+          })
+          .join("\n");
+      };
+    </script>
+  </body>
+</html>
