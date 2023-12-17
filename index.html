@@ -65,9 +65,35 @@
               {
                 id: event.id,
               }
-            )}">${dateTime}</a></h3>${content}`;
+            )}">${dateTime}</a></h3>${content}<button onclick="handleRemoveClick('${
+              event.id
+            }')">remove</button>`;
           })
           .join("\n");
+      };
+
+      const handleRemoveClick = async (eventId) => {
+        const sk = window.NostrTools.nip19.decode(nsec.value).data;
+
+        const newEvent = window.NostrTools.finishEvent(
+          {
+            ...event,
+            kind: 10003,
+            tags: event.tags.filter(
+              (tag) =>
+                (tag[0] == "e" && tag[1] != eventId) ||
+                tag[0] != "d" ||
+                tag[0] != "e"
+            ),
+          },
+          sk
+        );
+
+        const pool = new window.NostrTools.SimplePool();
+        pool.publish(relays, newEvent);
+        pool.close(relays);
+
+        handleClick();
       };
     </script>
   </body>
