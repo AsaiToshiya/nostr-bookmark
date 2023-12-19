@@ -8,7 +8,15 @@
     nsec:
     <input id="nsec" type="text" size="50" /><br />
     <button onclick="handleClick()">load</button><br />
-    bookmark:
+    bookmark:<br />
+    nevent:
+    <input
+      id="nevent"
+      type="text"
+      size="50"
+      placeholder="nevent1... or nostr:nevent1..."
+    /><br />
+    <button onclick="handleAddClick()">add</button>
     <div id="bookmark"></div>
 
     <script src="https://unpkg.com/nostr-tools/lib/nostr.bundle.js"></script>
@@ -34,6 +42,33 @@
           },
         ]),
       ];
+
+      const handleAddClick = async () => {
+        const sk = window.NostrTools.nip19.decode(nsec.value).data;
+
+        const newEvent = window.NostrTools.finishEvent(
+          {
+            ...event,
+            kind: 10003,
+            tags: [
+              ...event.tags.filter((tag) => tag[0] != "d"),
+              [
+                "e",
+                window.NostrTools.nip19.decode(
+                  nevent.value.replace(/^nostr:/, "")
+                ).data.id,
+              ],
+            ],
+          },
+          sk
+        );
+
+        const pool = new window.NostrTools.SimplePool();
+        pool.publish(relays, newEvent);
+        pool.close(relays);
+
+        handleClick();
+      };
 
       const handleClick = async () => {
         const sk = window.NostrTools.nip19.decode(nsec.value).data;
