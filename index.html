@@ -50,6 +50,7 @@
           {
             ...event,
             kind: 10003,
+            created_at: Math.floor(Date.now() / 1000),
             tags: [
               ...event.tags.filter((tag) => tag[0] != "d"),
               [
@@ -114,6 +115,7 @@
           {
             ...event,
             kind: 10003,
+            created_at: Math.floor(Date.now() / 1000),
             tags: event.tags.filter(
               (tag) =>
                 ((tag[0] == "e" && tag[1] != eventId) || tag[0] != "e") &&
