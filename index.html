@@ -132,6 +132,9 @@
 
         handleClick();
       };
+
+      npub.value = new URLSearchParams(location.search).get("npub");
+      npub.value && handleClick();
     </script>
   </body>
 </html>
