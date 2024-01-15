@@ -133,8 +133,10 @@
         handleClick();
       };
 
-      npub.value = new URLSearchParams(location.search).get("npub");
+      const params = new URLSearchParams(location.search);
+      npub.value = params.get("npub");
       npub.value && handleClick();
+      nevent.value = params.get("nevent");
     </script>
   </body>
 </html>
