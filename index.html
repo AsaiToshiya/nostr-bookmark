@@ -48,6 +48,10 @@
       const handleAddClick = async () => {
         const sk = window.NostrTools.nip19.decode(nsec.value).data;
 
+        const pk = window.NostrTools.getPublicKey(sk);
+        npub.value = window.NostrTools.nip19.npubEncode(pk);
+        await handleClick();
+
         const newEvent = window.NostrTools.finishEvent(
           {
             ...event,
