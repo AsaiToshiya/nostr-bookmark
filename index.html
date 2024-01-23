@@ -45,6 +45,25 @@
         ]),
       ];
 
+      const fetchBookmarksEvent = async () => {
+        const pk = window.NostrTools.nip19.decode(npub.value).data;
+
+        const pool = new window.NostrTools.SimplePool();
+        const events = await pool.list(relays, [
+          {
+            authors: [pk],
+            kinds: [10003],
+          },
+          {
+            authors: [pk],
+            kinds: [30001],
+            "#d": ["bookmark"],
+          },
+        ]);
+
+        return events.sort((a, b) => b.created_at - a.created_at)[0];
+      };
+
       const handleAddClick = async () => {
         const sk = window.NostrTools.nip19.decode(nsec.value).data;
 
@@ -78,22 +97,9 @@
       };
 
       const handleClick = async () => {
-        const pk = window.NostrTools.nip19.decode(npub.value).data;
-
         const pool = new window.NostrTools.SimplePool();
-        const events = await pool.list(relays, [
-          {
-            authors: [pk],
-            kinds: [10003],
-          },
-          {
-            authors: [pk],
-            kinds: [30001],
-            "#d": ["bookmark"],
-          },
-        ]);
 
-        event = events.sort((a, b) => b.created_at - a.created_at)[0];
+        event = await fetchBookmarksEvent();
 
         const bookmarks = (await e(pool, relays, event))[1];
         bookmark.innerHTML = bookmarks
